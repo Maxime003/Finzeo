@@ -36,7 +36,10 @@ export function RegisterForm() {
   async function onSubmit(values: RegisterFormValues) {
     try {
       await signUp(values.email, values.password, values.fullName)
-      toast({ title: 'Compte créé' })
+      toast({
+        title: 'Compte créé',
+        description: 'Pensez à valider votre adresse email via le lien envoyé dans votre boîte mail (vérifiez aussi les spams).',
+      })
       navigate('/app', { replace: true })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erreur lors de l\'inscription'
@@ -46,6 +49,9 @@ export function RegisterForm() {
 
   return (
     <div className="space-y-4">
+      <p className="text-sm text-muted-foreground bg-muted/50 rounded-md p-3 border border-border">
+        Après l'inscription, un email de validation vous sera envoyé. Pensez à cliquer sur le lien reçu pour valider votre adresse email (vérifiez aussi les courriers indésirables).
+      </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
