@@ -72,7 +72,7 @@ export function CategorizationFlow() {
   }
 
   const total = transactions.length
-  const progressLabel = `Transaction ${currentIndex + 1} sur ${total}`
+  const progressLabel = `${currentIndex + 1} sur ${total} restante${total > 1 ? 's' : ''}`
 
   // Determine the confidence to use when saving: if user picked the suggestion, use
   // the engine's confidence; otherwise the user made a manual choice -> confidence 1.
