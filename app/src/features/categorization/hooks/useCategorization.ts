@@ -6,6 +6,7 @@ import type { Transaction } from '@/types/transaction'
 import { learnRule } from '@/features/categorization/services/categorizationEngine'
 
 const UNCATEGORIZED_QUERY_KEY = 'uncategorized_transactions'
+const UNCATEGORIZED_COUNT_KEY = 'uncategorized_count'
 const LIMIT = 100
 
 async function fetchUncategorized(userId: string): Promise<Transaction[]> {
@@ -20,6 +21,16 @@ async function fetchUncategorized(userId: string): Promise<Transaction[]> {
   return (data ?? []) as Transaction[]
 }
 
+async function fetchUncategorizedCount(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('transactions')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .is('category_id', null)
+  if (error) throw error
+  return count ?? 0
+}
+
 export function useCategorization() {
   const user = useAuthStore((s) => s.user)
   const userId = user?.id ?? ''
@@ -28,6 +39,12 @@ export function useCategorization() {
   const query = useQuery({
     queryKey: [UNCATEGORIZED_QUERY_KEY, userId],
     queryFn: () => fetchUncategorized(userId),
+    enabled: !!userId,
+  })
+
+  const countQuery = useQuery({
+    queryKey: [UNCATEGORIZED_COUNT_KEY, userId],
+    queryFn: () => fetchUncategorizedCount(userId),
     enabled: !!userId,
   })
 
@@ -102,6 +119,7 @@ export function useCategorization() {
           .eq('id', current.id)
         await learnRule(userId, current.original_label, categoryId, confidence)
         await queryClient.refetchQueries({ queryKey: [UNCATEGORIZED_QUERY_KEY, userId] })
+        await queryClient.refetchQueries({ queryKey: [UNCATEGORIZED_COUNT_KEY, userId] })
         await queryClient.refetchQueries({ queryKey: ['categorization_rules', userId] })
         setLocalEdits((prev) => {
           const next = { ...prev }
@@ -117,9 +135,10 @@ export function useCategorization() {
 
   return {
     transactions,
+    totalUncategorized: countQuery.data ?? 0,
     currentIndex,
     current,
-    isLoading: query.isLoading,
+    isLoading: query.isLoading || countQuery.isLoading,
     isSaving,
     error: query.error,
     localDescription,
