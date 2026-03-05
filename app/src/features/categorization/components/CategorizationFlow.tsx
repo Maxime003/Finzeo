@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -28,22 +27,14 @@ export function CategorizationFlow() {
   } = useCategorization()
 
   const { categories, isLoading: categoriesLoading } = useCategories()
-  const { suggestedCategoryId, isLoading: suggestionsLoading } = useCategorySuggestions(
+  const {
+    suggestedCategoryId,
+    confidence: suggestionConfidence,
+    isLoading: suggestionsLoading,
+  } = useCategorySuggestions(
     current?.original_label ?? '',
     current?.amount ?? 0
   )
-
-  // Pré-remplir la catégorie avec la suggestion lorsqu'il n'y a pas encore de choix
-  useEffect(() => {
-    if (
-      current?.id &&
-      suggestedCategoryId &&
-      !suggestionsLoading &&
-      !localCategoryId
-    ) {
-      setCategoryId(suggestedCategoryId)
-    }
-  }, [current?.id, suggestedCategoryId, suggestionsLoading, localCategoryId, setCategoryId])
 
   if (isLoading || categoriesLoading) {
     return (
@@ -82,6 +73,13 @@ export function CategorizationFlow() {
 
   const total = transactions.length
   const progressLabel = `Transaction ${currentIndex + 1} sur ${total}`
+
+  // Determine the confidence to use when saving: if user picked the suggestion, use
+  // the engine's confidence; otherwise the user made a manual choice -> confidence 1.
+  const effectiveConfidence =
+    localCategoryId && localCategoryId === suggestedCategoryId
+      ? suggestionConfidence
+      : 1
 
   return (
     <Card>
@@ -126,8 +124,13 @@ export function CategorizationFlow() {
             value={localCategoryId}
             onChange={setCategoryId}
             suggestedCategoryId={suggestionsLoading ? undefined : suggestedCategoryId}
-            placeholder="Choisir une catégorie"
+            placeholder="Sélectionnez une catégorie"
           />
+          {!localCategoryId && (
+            <p className="text-xs text-muted-foreground">
+              Sélectionnez une catégorie pour pouvoir valider.
+            </p>
+          )}
         </div>
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
@@ -151,7 +154,7 @@ export function CategorizationFlow() {
         </Button>
         <Button
           type="button"
-          onClick={() => saveAndNext('next')}
+          onClick={() => saveAndNext('next', effectiveConfidence)}
           disabled={!localCategoryId || isSaving}
         >
           {isSaving ? 'Enregistrement…' : 'Valider & Suivante'}

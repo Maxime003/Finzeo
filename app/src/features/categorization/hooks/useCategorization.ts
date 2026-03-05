@@ -43,7 +43,7 @@ export function useCategorization() {
     const edits = localEdits[current.id]
     return {
       localDescription: edits?.description ?? current.description ?? '',
-      localCategoryId: edits?.categoryId ?? current.category_id ?? '',
+      localCategoryId: edits?.categoryId ?? '',
     }
   }, [current, localEdits])
 
@@ -55,7 +55,7 @@ export function useCategorization() {
         [current.id]: {
           ...prev[current.id],
           description,
-          categoryId: prev[current.id]?.categoryId ?? current.category_id ?? '',
+          categoryId: prev[current.id]?.categoryId ?? '',
         },
       }
     })
@@ -75,7 +75,7 @@ export function useCategorization() {
   }, [current])
 
   const saveAndNext = useCallback(
-    async (action: 'next' | 'skip' | 'previous') => {
+    async (action: 'next' | 'skip' | 'previous', confidence: number = 1) => {
       if (action === 'previous') {
         setCurrentIndex((i) => Math.max(0, i - 1))
         return
@@ -85,11 +85,8 @@ export function useCategorization() {
         return
       }
       if (!current || !userId) return
-      const categoryId = localEdits[current.id]?.categoryId ?? current.category_id
-      if (!categoryId) {
-        setCurrentIndex((i) => Math.min(transactions.length - 1, i + 1))
-        return
-      }
+      const categoryId = localEdits[current.id]?.categoryId
+      if (!categoryId) return
       const description = localEdits[current.id]?.description ?? current.description ?? ''
       setIsSaving(true)
       try {
@@ -101,7 +98,7 @@ export function useCategorization() {
             updated_at: new Date().toISOString(),
           })
           .eq('id', current.id)
-        await learnRule(userId, current.original_label, categoryId)
+        await learnRule(userId, current.original_label, categoryId, confidence)
         await queryClient.invalidateQueries({ queryKey: [UNCATEGORIZED_QUERY_KEY, userId] })
         await queryClient.invalidateQueries({ queryKey: ['categorization_rules', userId] })
         setLocalEdits((prev) => {

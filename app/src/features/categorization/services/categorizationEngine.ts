@@ -1,31 +1,35 @@
 import { supabase } from '@/lib/supabase'
 import type { Category, CategorizationRule } from '@/types/transaction'
 
+// Les noms de catégories doivent correspondre exactement aux catégories par défaut
+// créées par create_default_categories() dans le schéma SQL.
+// Catégories disponibles : Logement, Charge mensuelle logement, Charge mensuelle,
+// Courses, Restauration, Transport, Loisirs, Santé, Hygiène, Éducation, Cadeaux,
+// Divers, Vacances, Revenus, Transferts, Non catégorisé
 const DEFAULT_PATTERNS: Record<string, string> = {
   deliveroo: 'Restauration',
   'uber eats': 'Restauration',
   carrefour: 'Courses',
   intermarche: 'Courses',
-  boulanger: 'Loisirs',
+  boulanger: 'Divers',
   'tcl 69': 'Transport',
   'spl ru lyon': 'Transport',
   aprr: 'Transport',
   area: 'Transport',
   coiffure: 'Hygiène',
-  // Charges logement (loyer + énergie + eau)
   ekwateur: 'Charge mensuelle logement',
   edf: 'Charge mensuelle logement',
   engie: 'Charge mensuelle logement',
   totalenergies: 'Charge mensuelle logement',
   'total energies': 'Charge mensuelle logement',
   veolia: 'Charge mensuelle logement',
-  'suez': 'Charge mensuelle logement',
+  suez: 'Charge mensuelle logement',
   'eau du grand lyon': 'Charge mensuelle logement',
   sfr: 'Charge mensuelle',
   orange: 'Charge mensuelle',
   free: 'Charge mensuelle',
   bouygues: 'Charge mensuelle',
-  loyer: 'Charge mensuelle logement',
+  loyer: 'Logement',
   akairo: 'Revenus',
 }
 
@@ -80,8 +84,6 @@ export function getSuggestedCategoryId(
 }
 
 function extractPattern(label: string): string {
-  // Objectif: pattern stable si la transaction réapparaît "sous le même nom"
-  // On retire les préfixes usuels et les numéros/références qui varient.
   const normalized = normalizeLabel(label)
   if (!normalized) return ''
 
@@ -92,15 +94,14 @@ function extractPattern(label: string): string {
     .replace(/^prelevement\s+/, '')
     .replace(/^cotisation\s+/, '')
     .replace(/^remise cheque\s+/, '')
-    .replace(/\b\d{6,}\b/g, ' ') // longs identifiants
-    .replace(/\b\d+\b/g, ' ') // nombres isolés
+    .replace(/\b\d{6,}\b/g, ' ')
+    .replace(/\b\d+\b/g, ' ')
     .replace(/[-_/]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 
   if (!s) s = normalized
 
-  // Garder un pattern plutôt "exact" mais pas trop long
   const words = s.split(' ').filter(Boolean)
   return words.slice(0, 6).join(' ').slice(0, 80)
 }
@@ -110,13 +111,12 @@ const MIN_PATTERN_LENGTH = 3
 export async function learnRule(
   userId: string,
   label: string,
-  categoryId: string
+  categoryId: string,
+  confidence: number = 1
 ): Promise<void> {
   const pattern = extractPattern(label)
   if (!pattern || pattern.length < MIN_PATTERN_LENGTH) return
 
-  // Une règle par (user_id, pattern). Si l'utilisateur change de catégorie,
-  // on met à jour la règle existante plutôt que d'en créer une concurrente.
   const { data: existing, error: selectError } = await supabase
     .from('categorization_rules')
     .select('id, usage_count, category_id')
@@ -132,7 +132,7 @@ export async function learnRule(
       .from('categorization_rules')
       .update({
         category_id: categoryId,
-        confidence: 1,
+        confidence: Math.min(1, Math.max(confidence, existing.usage_count > 3 ? 0.9 : confidence)),
         usage_count: existing.usage_count + 1,
         last_used_at: new Date().toISOString(),
       })
@@ -142,12 +142,12 @@ export async function learnRule(
     const { error: insertError } = await supabase
       .from('categorization_rules')
       .insert({
-      user_id: userId,
-      pattern,
-      category_id: categoryId,
-      confidence: 1,
-      usage_count: 1,
-    })
+        user_id: userId,
+        pattern,
+        category_id: categoryId,
+        confidence,
+        usage_count: 1,
+      })
     if (insertError) throw insertError
   }
 }

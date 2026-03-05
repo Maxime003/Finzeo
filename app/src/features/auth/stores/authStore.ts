@@ -6,6 +6,7 @@ interface AuthState {
   user: User | null
   session: Session | null
   loading: boolean
+  _initialized: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string, fullName?: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
@@ -13,10 +14,11 @@ interface AuthState {
   initialize: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
   loading: true,
+  _initialized: false,
 
   signIn: async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -57,6 +59,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   initialize: async () => {
+    if (get()._initialized) return
+
+    set({ _initialized: true })
+
     const { data: { session } } = await supabase.auth.getSession()
     set({ session, user: session?.user ?? null, loading: false })
 
