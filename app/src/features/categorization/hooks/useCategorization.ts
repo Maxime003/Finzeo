@@ -32,10 +32,12 @@ export function useCategorization() {
   })
 
   const transactions = query.data ?? []
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const [rawIndex, setCurrentIndex] = useState(0)
   const [localEdits, setLocalEdits] = useState<Record<string, { description: string; categoryId: string }>>({})
   const [isSaving, setIsSaving] = useState(false)
 
+  // Clamp index when the list shrinks (e.g. after a save + refetch)
+  const currentIndex = transactions.length === 0 ? 0 : Math.min(rawIndex, transactions.length - 1)
   const current = transactions[currentIndex] ?? null
 
   const { localDescription, localCategoryId } = useMemo(() => {
@@ -106,7 +108,6 @@ export function useCategorization() {
           delete next[current.id]
           return next
         })
-        setCurrentIndex((i) => Math.min(transactions.length - 1, i + 1))
       } finally {
         setIsSaving(false)
       }
