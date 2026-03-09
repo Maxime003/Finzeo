@@ -98,6 +98,42 @@ async function fetchMonthlyStats(userId: string, month: Date): Promise<MonthlySt
   return { totalTransactions: total ?? 0, uncategorized: uncat ?? 0 }
 }
 
+interface BankBalanceData {
+  bankBalance: number
+  bankBalanceDate: string | null
+  pendingTotal: number
+  realBalance: number
+}
+
+async function fetchLatestBankBalance(userId: string): Promise<BankBalanceData> {
+  const { data: snapshot, error: snapErr } = await supabase
+    .from('account_snapshots')
+    .select('balance, snapshot_date')
+    .eq('user_id', userId)
+    .order('snapshot_date', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (snapErr) throw snapErr
+
+  const { data: pendingRows, error: pendErr } = await supabase
+    .from('pending_expenses')
+    .select('amount')
+    .eq('user_id', userId)
+    .is('reconciled_with', null)
+  if (pendErr) throw pendErr
+
+  const pendingTotal = (pendingRows ?? []).reduce((sum, r) => sum + r.amount, 0)
+  const bankBalance = snapshot?.balance ?? 0
+  const bankBalanceDate = snapshot?.snapshot_date ?? null
+
+  return {
+    bankBalance,
+    bankBalanceDate,
+    pendingTotal,
+    realBalance: bankBalance + pendingTotal,
+  }
+}
+
 export function useDashboard(month: Date) {
   const user = useAuthStore((s) => s.user)
   const userId = user?.id ?? ''
@@ -121,11 +157,19 @@ export function useDashboard(month: Date) {
     enabled: !!userId,
   })
 
+  const balanceData = useQuery({
+    queryKey: ['dashboard_balance', userId],
+    queryFn: () => fetchLatestBankBalance(userId),
+    enabled: !!userId,
+  })
+
   return {
     totals: totals.data ?? { income: 0, expenses: 0, net: 0 },
     topCategories: topCategories.data ?? [],
     stats: stats.data ?? { totalTransactions: 0, uncategorized: 0 },
+    balance: balanceData.data ?? { bankBalance: 0, bankBalanceDate: null, pendingTotal: 0, realBalance: 0 },
     isLoading: totals.isLoading || topCategories.isLoading || stats.isLoading,
-    error: totals.error || topCategories.error || stats.error,
+    isBalanceLoading: balanceData.isLoading,
+    error: totals.error || topCategories.error || stats.error || balanceData.error,
   }
 }

@@ -4,13 +4,13 @@ import { addMonths, subMonths } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDashboard } from '../hooks/useDashboard'
-import { DashboardOverview } from '../components/DashboardOverview'
+import { BalanceOverview, DashboardOverview } from '../components/DashboardOverview'
 import { TopCategories } from '../components/TopCategories'
 import { formatMonthYear } from '@/lib/utils/date'
 
 export function DashboardPage() {
   const [month, setMonth] = useState(() => new Date())
-  const { totals, topCategories, stats, isLoading, error } = useDashboard(month)
+  const { totals, topCategories, stats, balance, isLoading, isBalanceLoading, error } = useDashboard(month)
 
   if (error) {
     return (
@@ -50,6 +50,14 @@ export function DashboardPage() {
         </div>
       </div>
 
+      <BalanceOverview
+        bankBalance={balance.bankBalance}
+        bankBalanceDate={balance.bankBalanceDate}
+        pendingTotal={balance.pendingTotal}
+        realBalance={balance.realBalance}
+        isLoading={isBalanceLoading}
+      />
+
       {hasNoData ? (
         <div className="py-16 text-center">
           <p className="text-lg text-muted-foreground mb-4">
@@ -61,6 +69,7 @@ export function DashboardPage() {
         </div>
       ) : (
         <>
+          <h2 className="text-lg font-semibold">Ce mois-ci</h2>
           <DashboardOverview
             income={totals.income}
             expenses={totals.expenses}
