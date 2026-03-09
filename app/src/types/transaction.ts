@@ -43,6 +43,17 @@ export interface ImportBatch {
   created_at: string
 }
 
+export interface PendingExpense {
+  id: string
+  user_id: string
+  amount: number
+  description: string
+  expense_date: string
+  reconciled_with?: string
+  reconciled_at?: string
+  created_at: string
+}
+
 export interface CategorizationRule {
   id: string
   user_id: string
