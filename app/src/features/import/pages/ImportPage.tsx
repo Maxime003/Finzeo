@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ParsedCSVResult } from '@/types/csv'
 import { CSVUpload } from '@/features/import/components/CSVUpload'
@@ -28,26 +28,7 @@ export function ImportPage() {
     setStep('summary')
   }, [])
 
-  // When user confirms summary, check for reconciliation matches
-  const handleConfirmSummary = useCallback(() => {
-    if (!result) return
-    if (pendingExpenses.length > 0) {
-      const found = findReconciliationMatches(pendingExpenses, result.transactions)
-      if (found.length > 0) {
-        setMatches(found)
-        setStep('reconciliation')
-        return
-      }
-    }
-    // No matches — import directly
-    doImport([])
-  }, [result, pendingExpenses])
-
-  const handleReconciliationConfirm = useCallback((confirmed: ReconciliationMatch[]) => {
-    doImport(confirmed)
-  }, [result, file])
-
-  function doImport(confirmedMatches: ReconciliationMatch[]) {
+  const doImport = useCallback((confirmedMatches: ReconciliationMatch[]) => {
     if (!result || !file) return
     importToDb(result, file, confirmedMatches)
       .then(() => {
@@ -61,7 +42,24 @@ export function ImportPage() {
           variant: 'destructive',
         })
       })
-  }
+  }, [result, file, importToDb, toast, navigate])
+
+  const handleConfirmSummary = useCallback(() => {
+    if (!result) return
+    if (pendingExpenses.length > 0) {
+      const found = findReconciliationMatches(pendingExpenses, result.transactions)
+      if (found.length > 0) {
+        setMatches(found)
+        setStep('reconciliation')
+        return
+      }
+    }
+    doImport([])
+  }, [result, pendingExpenses, doImport])
+
+  const handleReconciliationConfirm = useCallback((confirmed: ReconciliationMatch[]) => {
+    doImport(confirmed)
+  }, [doImport])
 
   const handleReset = useCallback(() => {
     setResult(null)
