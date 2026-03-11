@@ -48,6 +48,23 @@ export function useCategorization() {
     enabled: !!userId,
   })
 
+  const lastCategorizedQuery = useQuery({
+    queryKey: ['last_categorized', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('transaction_date')
+        .eq('user_id', userId)
+        .not('category_id', 'is', null)
+        .order('transaction_date', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) return null
+      return data?.transaction_date ?? null
+    },
+    enabled: !!userId,
+  })
+
   const transactions = query.data ?? []
   const [rawIndex, setCurrentIndex] = useState(0)
   const [localEdits, setLocalEdits] = useState<Record<string, { description: string; categoryId: string }>>({})
@@ -121,6 +138,7 @@ export function useCategorization() {
         await queryClient.refetchQueries({ queryKey: [UNCATEGORIZED_QUERY_KEY, userId] })
         await queryClient.refetchQueries({ queryKey: [UNCATEGORIZED_COUNT_KEY, userId] })
         await queryClient.refetchQueries({ queryKey: ['categorization_rules', userId] })
+        await queryClient.refetchQueries({ queryKey: ['last_categorized', userId] })
         setLocalEdits((prev) => {
           const next = { ...prev }
           delete next[current.id]
@@ -136,6 +154,7 @@ export function useCategorization() {
   return {
     transactions,
     totalUncategorized: countQuery.data ?? 0,
+    lastCategorizedDate: lastCategorizedQuery.data ?? null,
     currentIndex,
     current,
     isLoading: query.isLoading || countQuery.isLoading,

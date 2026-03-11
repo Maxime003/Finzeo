@@ -9,12 +9,14 @@ import { useCategorization } from '@/features/categorization/hooks/useCategoriza
 import { useCategorySuggestions } from '@/features/categorization/hooks/useCategorySuggestions'
 import { useCategories } from '@/features/categorization/hooks/useCategories'
 import { CategorySelector } from './CategorySelector'
+import { formatTransactionDate } from '@/lib/utils/date'
 import { ChevronLeft, SkipForward } from 'lucide-react'
 
 export function CategorizationFlow() {
   const {
     transactions,
     totalUncategorized,
+    lastCategorizedDate,
     currentIndex,
     current,
     isLoading,
@@ -85,7 +87,14 @@ export function CategorizationFlow() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle>Catégoriser vos transactions</CardTitle>
-        <span className="text-sm text-muted-foreground">{progressLabel}</span>
+        <div className="text-right">
+          <span className="text-sm text-muted-foreground">{progressLabel}</span>
+          {lastCategorizedDate && (
+            <p className="text-xs text-muted-foreground">
+              Dernière transaction catégorisée : {formatTransactionDate(lastCategorizedDate)}
+            </p>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="rounded-lg border bg-muted/30 p-4 space-y-2">

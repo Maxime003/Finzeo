@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button'
 import { useDashboard } from '../hooks/useDashboard'
 import { BalanceOverview, DashboardOverview } from '../components/DashboardOverview'
 import { TopCategories } from '../components/TopCategories'
-import { formatMonthYear } from '@/lib/utils/date'
+import { formatMonthYear, formatTransactionDate } from '@/lib/utils/date'
 
 export function DashboardPage() {
   const [month, setMonth] = useState(() => new Date())
-  const { totals, topCategories, stats, balance, isLoading, isBalanceLoading, error } = useDashboard(month)
+  const { totals, topCategories, stats, balance, lastCategorizedDate, isLoading, isBalanceLoading, error } = useDashboard(month)
 
   if (error) {
     return (
@@ -57,6 +57,18 @@ export function DashboardPage() {
         realBalance={balance.realBalance}
         isLoading={isBalanceLoading}
       />
+
+      {lastCategorizedDate ? (
+        <p className="text-sm text-muted-foreground">
+          Transactions catégorisées jusqu'au {formatTransactionDate(lastCategorizedDate)}
+        </p>
+      ) : (
+        !isBalanceLoading && (
+          <p className="text-sm text-muted-foreground">
+            Aucune transaction catégorisée
+          </p>
+        )
+      )}
 
       {hasNoData ? (
         <div className="py-16 text-center">

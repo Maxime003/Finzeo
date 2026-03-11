@@ -110,7 +110,7 @@ async function fetchLatestBankBalance(userId: string): Promise<BankBalanceData> 
     .from('account_snapshots')
     .select('balance, snapshot_date')
     .eq('user_id', userId)
-    .order('snapshot_date', { ascending: false })
+    .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
   if (snapErr) throw snapErr
@@ -170,11 +170,29 @@ export function useDashboard(month: Date) {
     enabled: !!userId,
   })
 
+  const lastCategorizedQuery = useQuery({
+    queryKey: ['last_categorized', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('transaction_date')
+        .eq('user_id', userId)
+        .not('category_id', 'is', null)
+        .order('transaction_date', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) return null
+      return data?.transaction_date ?? null
+    },
+    enabled: !!userId,
+  })
+
   return {
     totals: totals.data ?? { income: 0, expenses: 0, net: 0 },
     topCategories: topCategories.data ?? [],
     stats: stats.data ?? { totalTransactions: 0, uncategorized: 0 },
     balance: balanceData.data ?? { bankBalance: 0, bankBalanceDate: null, pendingTotal: 0, realBalance: 0 },
+    lastCategorizedDate: lastCategorizedQuery.data ?? null,
     isLoading: totals.isLoading || topCategories.isLoading || stats.isLoading,
     isBalanceLoading: balanceData.isLoading,
     error: totals.error || topCategories.error || stats.error,
