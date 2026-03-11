@@ -36,11 +36,11 @@ export function CategorySelector({
           type="button"
           variant="outline"
           size="sm"
-          className="w-full justify-start gap-2 border-dashed"
+          className="w-full justify-start gap-2 border-dashed border-primary/50 bg-primary/5 hover:bg-primary/10 text-primary"
           onClick={() => onChange(suggestedCategoryId!)}
         >
-          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-muted-foreground">Suggestion :</span>
+          <Sparkles className="h-3.5 w-3.5" />
+          <span className="opacity-70">Suggestion :</span>
           <span
             className="size-2.5 shrink-0 rounded-full"
             style={{ backgroundColor: suggestedCategory.color }}

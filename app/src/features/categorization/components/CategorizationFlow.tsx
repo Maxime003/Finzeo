@@ -5,12 +5,15 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Progress } from '@/components/ui/progress'
 import { useCategorization } from '@/features/categorization/hooks/useCategorization'
 import { useCategorySuggestions } from '@/features/categorization/hooks/useCategorySuggestions'
 import { useCategories } from '@/features/categorization/hooks/useCategories'
 import { CategorySelector } from './CategorySelector'
 import { formatTransactionDate } from '@/lib/utils/date'
-import { ChevronLeft, SkipForward } from 'lucide-react'
+import { formatAmountSigned } from '@/lib/utils/currency'
+import { cn } from '@/lib/utils'
+import { ChevronLeft, SkipForward, CheckCircle2 } from 'lucide-react'
 
 export function CategorizationFlow() {
   const {
@@ -41,9 +44,12 @@ export function CategorizationFlow() {
 
   if (isLoading || categoriesLoading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground">Chargement des transactions…</p>
+      <Card className="shadow-sm">
+        <CardContent className="flex items-center justify-center py-16">
+          <div className="flex flex-col items-center gap-3 text-muted-foreground">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary" />
+            <p className="text-sm">Chargement des transactions…</p>
+          </div>
         </CardContent>
       </Card>
     )
@@ -51,7 +57,7 @@ export function CategorizationFlow() {
 
   if (error) {
     return (
-      <Card>
+      <Card className="shadow-sm">
         <CardContent className="p-6">
           <p className="text-destructive">Erreur : {error instanceof Error ? error.message : 'Une erreur est survenue'}</p>
         </CardContent>
@@ -61,14 +67,20 @@ export function CategorizationFlow() {
 
   if (transactions.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground mb-4">
-            Toutes vos transactions sont déjà catégorisées !
-          </p>
-          <Link to="/app/transactions" className="text-primary underline hover:no-underline">
-            Voir la liste des transactions
-          </Link>
+      <Card className="shadow-sm">
+        <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <CheckCircle2 className="h-6 w-6 text-primary" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium">Toutes les transactions sont catégorisées</p>
+            <p className="text-sm text-muted-foreground">
+              Consultez votre tableau de bord pour un résumé.
+            </p>
+          </div>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/app/transactions">Voir les transactions</Link>
+          </Button>
         </CardContent>
       </Card>
     )
@@ -83,92 +95,106 @@ export function CategorizationFlow() {
       ? suggestionConfidence
       : 1
 
+  const amount = current?.amount ?? 0
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>Catégoriser vos transactions</CardTitle>
-        <div className="text-right">
-          <span className="text-sm text-muted-foreground">{progressLabel}</span>
+    <div className="space-y-4">
+      {/* Progress section */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>{progressLabel}</span>
           {lastCategorizedDate && (
-            <p className="text-xs text-muted-foreground">
-              Dernière transaction catégorisée : {formatTransactionDate(lastCategorizedDate)}
-            </p>
+            <span>Dernière : {formatTransactionDate(lastCategorizedDate)}</span>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">
-              {current?.transaction_date
-                ? format(new Date(current.transaction_date), 'EEEE d MMMM yyyy', { locale: fr })
-                : '—'}
-            </span>
+        <Progress value={0} className="h-1.5" />
+      </div>
+
+      {/* Transaction card */}
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1 min-w-0">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                {current?.transaction_date
+                  ? format(new Date(current.transaction_date), 'EEEE d MMMM yyyy', { locale: fr })
+                  : '—'}
+              </p>
+              <CardTitle className="text-base font-medium leading-snug">
+                {current?.original_label ?? '—'}
+              </CardTitle>
+            </div>
             <span
-              className={
-                (current?.amount ?? 0) >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'
-              }
+              className={cn(
+                'text-3xl font-bold tabular-nums shrink-0',
+                amount >= 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-destructive'
+              )}
             >
-              {(current?.amount ?? 0) >= 0 ? '+' : ''}
-              {(current?.amount ?? 0).toFixed(2)} €
+              {formatAmountSigned(amount)}
             </span>
           </div>
-          <p className="font-medium">{current?.original_label ?? '—'}</p>
-        </div>
+        </CardHeader>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">Description personnalisée</Label>
-          <Input
-            id="description"
-            value={localDescription}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex. Restaurant du centre"
-          />
-        </div>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Catégorie</Label>
+            <CategorySelector
+              categories={categories}
+              value={localCategoryId}
+              onChange={setCategoryId}
+              suggestedCategoryId={suggestionsLoading ? undefined : suggestedCategoryId}
+              placeholder="Sélectionnez une catégorie"
+            />
+            {!localCategoryId && (
+              <p className="text-xs text-muted-foreground">
+                Sélectionnez une catégorie pour pouvoir valider.
+              </p>
+            )}
+          </div>
 
-        <div className="space-y-2">
-          <Label>Catégorie</Label>
-          <CategorySelector
-            categories={categories}
-            value={localCategoryId}
-            onChange={setCategoryId}
-            suggestedCategoryId={suggestionsLoading ? undefined : suggestedCategoryId}
-            placeholder="Sélectionnez une catégorie"
-          />
-          {!localCategoryId && (
-            <p className="text-xs text-muted-foreground">
-              Sélectionnez une catégorie pour pouvoir valider.
-            </p>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => saveAndNext('previous')}
-          disabled={currentIndex === 0 || isSaving}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Précédente
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => saveAndNext('skip')}
-          disabled={isSaving}
-        >
-          <SkipForward className="h-4 w-4 mr-1" />
-          Passer
-        </Button>
-        <Button
-          type="button"
-          onClick={() => saveAndNext('next', effectiveConfidence)}
-          disabled={!localCategoryId || isSaving}
-        >
-          {isSaving ? 'Enregistrement…' : 'Valider & Suivante'}
-        </Button>
-      </CardFooter>
-    </Card>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description personnalisée</Label>
+            <Input
+              id="description"
+              value={localDescription}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Ex. Restaurant du centre"
+            />
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex justify-between pt-4 border-t border-border">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => saveAndNext('previous')}
+              disabled={currentIndex === 0 || isSaving}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Précédente
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => saveAndNext('skip')}
+              disabled={isSaving}
+            >
+              <SkipForward className="h-4 w-4 mr-1" />
+              Passer
+            </Button>
+          </div>
+          <Button
+            type="button"
+            onClick={() => saveAndNext('next', effectiveConfidence)}
+            disabled={!localCategoryId || isSaving}
+          >
+            {isSaving ? 'Enregistrement…' : 'Valider & Suivante'}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   )
 }
