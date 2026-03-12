@@ -165,8 +165,8 @@ export function CategorizationFlow() {
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between pt-4 border-t border-border">
-          <div className="flex gap-2">
+        <CardFooter className="flex flex-col-reverse gap-2 pt-4 border-t border-border sm:flex-row sm:justify-between">
+          <div className="flex w-full gap-2 sm:w-auto">
             <Button
               type="button"
               variant="ghost"
@@ -188,6 +188,7 @@ export function CategorizationFlow() {
           </div>
           <Button
             type="button"
+            className="w-full sm:w-auto"
             onClick={() => saveAndNext('next', effectiveConfidence)}
             disabled={!localCategoryId || isSaving}
           >
