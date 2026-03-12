@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/features/auth/stores/authStore'
 import { getMonthRange } from '@/lib/utils/date'
-import type { Transaction } from '@/types/transaction'
+import type { Transaction, Category } from '@/types/transaction'
 
 const PAGE_SIZE = 20
 
@@ -14,12 +14,7 @@ export interface TransactionFilters {
 }
 
 interface TransactionWithCategory extends Transaction {
-  category: {
-    id: string
-    name: string
-    color: string
-    icon: string
-  } | null
+  category: Category | null
 }
 
 async function fetchTransactions(

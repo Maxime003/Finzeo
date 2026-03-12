@@ -7,7 +7,7 @@ export interface Transaction {
   operation_type?: string
   description?: string
   category_id?: string
-  category?: Category
+  category?: Category | null
   account_name?: string
   is_recurring: boolean
   import_batch_id?: string

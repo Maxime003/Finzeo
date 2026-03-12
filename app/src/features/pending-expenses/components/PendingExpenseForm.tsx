@@ -29,7 +29,7 @@ export function PendingExpenseForm() {
   const addExpense = useAddPendingExpense()
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as never,
     defaultValues: {
       amount: '' as unknown as number,
       description: '',
