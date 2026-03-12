@@ -74,7 +74,7 @@ export function MainLayout() {
     <div className="min-h-screen bg-background">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container flex h-14 items-center justify-between gap-4">
+        <div className="container mx-auto px-4 flex h-14 items-center justify-between gap-4">
           {/* Logo */}
           <Link
             to="/app"
@@ -172,7 +172,7 @@ export function MainLayout() {
       </header>
 
       {/* Main content */}
-      <main className="container py-6">
+      <main className="container mx-auto px-4 py-6">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>

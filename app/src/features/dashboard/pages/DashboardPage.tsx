@@ -49,6 +49,32 @@ export function DashboardPage() {
         )
       )}
 
+      {/* Section header + month navigator — always visible */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          Analyse mensuelle
+        </h2>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMonth((m) => subMonths(m, 1))}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="min-w-[140px] text-center text-sm font-medium capitalize">
+            {formatMonthYear(month)}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMonth((m) => addMonths(m, 1))}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       {hasNoData ? (
         <div className="py-16 text-center">
           <p className="text-lg text-muted-foreground mb-4">
@@ -60,32 +86,6 @@ export function DashboardPage() {
         </div>
       ) : (
         <>
-          {/* Section separator */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Analyse mensuelle
-            </h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setMonth((m) => subMonths(m, 1))}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="min-w-[140px] text-center text-sm font-medium capitalize">
-                {formatMonthYear(month)}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setMonth((m) => addMonths(m, 1))}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
           <DashboardOverview
             income={totals.income}
             expenses={totals.expenses}
