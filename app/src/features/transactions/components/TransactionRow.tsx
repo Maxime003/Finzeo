@@ -17,7 +17,7 @@ export function TransactionRow({ transaction, onEdit }: TransactionRowProps) {
 
   return (
     <TableRow>
-      <TableCell className="whitespace-nowrap text-muted-foreground">
+      <TableCell className="pl-4 whitespace-nowrap text-muted-foreground">
         {formatTransactionDate(transaction.transaction_date)}
       </TableCell>
       <TableCell title={label}>{truncated}</TableCell>

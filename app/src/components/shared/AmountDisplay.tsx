@@ -11,7 +11,7 @@ export function AmountDisplay({ amount, className }: AmountDisplayProps) {
     <span
       className={cn(
         'tabular-nums font-medium',
-        amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive',
+        amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground',
         className
       )}
     >

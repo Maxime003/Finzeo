@@ -43,7 +43,7 @@ export function TransactionsPage() {
                 'font-medium tabular-nums',
                 pageTotal >= 0
                   ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-destructive'
+                  : 'text-foreground'
               )}
             >
               {formatAmountSigned(pageTotal)}
