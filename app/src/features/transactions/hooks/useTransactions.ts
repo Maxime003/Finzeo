@@ -64,13 +64,16 @@ export function useTransactions(filters: TransactionFilters) {
     enabled: !!userId,
   })
 
+  const transactions = query.data?.data ?? []
   const totalCount = query.data?.count ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const pageTotal = transactions.reduce((sum, t) => sum + t.amount, 0)
 
   return {
-    transactions: query.data?.data ?? [],
+    transactions,
     totalCount,
     totalPages,
+    pageTotal,
     page,
     setPage,
     isLoading: query.isLoading,

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { formatAmount } from '@/lib/utils/currency'
 import { formatTransactionDate } from '@/lib/utils/date'
 import type { ReconciliationMatch } from '../services/reconciliation'
@@ -44,11 +45,10 @@ export function ReconciliationReview({ matches, onConfirm, isImporting }: Reconc
             key={match.pendingExpense.id}
             className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-muted/50"
           >
-            <input
-              type="checkbox"
-              className="mt-1"
+            <Checkbox
               checked={checked[match.pendingExpense.id] ?? false}
-              onChange={() => toggle(match.pendingExpense.id)}
+              onCheckedChange={() => toggle(match.pendingExpense.id)}
+              className="mt-0.5"
             />
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
               <div>
@@ -57,7 +57,7 @@ export function ReconciliationReview({ matches, onConfirm, isImporting }: Reconc
                   {formatTransactionDate(match.pendingExpense.expense_date)}
                 </p>
                 <p>{match.pendingExpense.description}</p>
-                <p className="text-red-600 font-medium tabular-nums">
+                <p className="text-destructive font-medium tabular-nums">
                   {formatAmount(match.pendingExpense.amount)}
                 </p>
               </div>
@@ -67,7 +67,7 @@ export function ReconciliationReview({ matches, onConfirm, isImporting }: Reconc
                   {formatTransactionDate(match.transaction.date)}
                 </p>
                 <p className="truncate">{match.transaction.label}</p>
-                <p className="text-red-600 font-medium tabular-nums">
+                <p className="text-destructive font-medium tabular-nums">
                   {formatAmount(-(match.transaction.debit ?? 0))}
                 </p>
               </div>

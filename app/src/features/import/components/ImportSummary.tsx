@@ -1,6 +1,7 @@
 import type { ParsedCSVResult } from '@/types/csv'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { formatAmount } from '@/lib/utils/currency'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -16,13 +17,6 @@ function formatDate(isoDate: string): string {
   } catch {
     return isoDate
   }
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(value)
 }
 
 export function ImportSummary({
@@ -60,7 +54,7 @@ export function ImportSummary({
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Solde au téléchargement</dt>
-            <dd className="font-medium">{formatCurrency(metadata.balance)}</dd>
+            <dd className="font-medium tabular-nums">{formatAmount(metadata.balance)}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-muted-foreground">Date du fichier</dt>
@@ -68,7 +62,7 @@ export function ImportSummary({
           </div>
           <div className="flex justify-between border-t pt-2">
             <dt className="text-muted-foreground">Nombre de transactions</dt>
-            <dd className="font-semibold">{transactions.length}</dd>
+            <dd className="font-semibold text-primary tabular-nums">{transactions.length}</dd>
           </div>
         </dl>
         <Button

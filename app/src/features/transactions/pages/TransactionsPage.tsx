@@ -3,6 +3,8 @@ import { useTransactions } from '../hooks/useTransactions'
 import { TransactionFilters } from '../components/TransactionFilters'
 import { TransactionList } from '../components/TransactionList'
 import { TransactionEditModal } from '../components/TransactionEditModal'
+import { formatAmountSigned } from '@/lib/utils/currency'
+import { cn } from '@/lib/utils'
 import type { Transaction } from '@/types/transaction'
 
 export function TransactionsPage() {
@@ -11,7 +13,7 @@ export function TransactionsPage() {
   const [search, setSearch] = useState<string | undefined>()
   const [editing, setEditing] = useState<Transaction | null>(null)
 
-  const { transactions, totalCount, page, totalPages, setPage, isLoading, error } =
+  const { transactions, totalCount, pageTotal, page, totalPages, setPage, isLoading, error } =
     useTransactions({ month, categoryId, search })
 
   const handleSearchChange = useCallback((s?: string) => {
@@ -31,7 +33,24 @@ export function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Transactions</h1>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Transactions</h1>
+        {!isLoading && totalCount > 0 && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {totalCount} transaction{totalCount > 1 ? 's' : ''} · Total page :{' '}
+            <span
+              className={cn(
+                'font-medium tabular-nums',
+                pageTotal >= 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-destructive'
+              )}
+            >
+              {formatAmountSigned(pageTotal)}
+            </span>
+          </p>
+        )}
+      </div>
 
       <TransactionFilters
         month={month}

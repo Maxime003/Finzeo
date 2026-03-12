@@ -9,8 +9,15 @@ import { usePendingExpenses } from '@/features/pending-expenses/hooks/usePending
 import { findReconciliationMatches, type ReconciliationMatch } from '../services/reconciliation'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 type Step = 'upload' | 'summary' | 'reconciliation'
+
+const STEPS: { key: Step; label: string }[] = [
+  { key: 'upload', label: 'Fichier' },
+  { key: 'summary', label: 'Résumé' },
+  { key: 'reconciliation', label: 'Réconciliation' },
+]
 
 export function ImportPage() {
   const [result, setResult] = useState<ParsedCSVResult | null>(null)
@@ -81,6 +88,49 @@ export function ImportPage() {
       <p className="text-muted-foreground">
         Importez un export de compte Crédit Agricole (format CSV).
       </p>
+
+      {/* Step indicator */}
+      <div className="flex items-center gap-2">
+        {STEPS.map((s, i) => {
+          const stepIndex = STEPS.findIndex((x) => x.key === step)
+          const isDone = i < stepIndex
+          const isCurrent = i === stepIndex
+          return (
+            <div key={s.key} className="flex items-center gap-2">
+              {i > 0 && (
+                <div
+                  className={cn(
+                    'h-px w-6',
+                    isDone ? 'bg-primary' : 'bg-border'
+                  )}
+                />
+              )}
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
+                    isCurrent
+                      ? 'bg-primary text-primary-foreground'
+                      : isDone
+                        ? 'bg-primary/20 text-primary'
+                        : 'bg-muted text-muted-foreground'
+                  )}
+                >
+                  {i + 1}
+                </span>
+                <span
+                  className={cn(
+                    'text-sm',
+                    isCurrent ? 'font-medium' : 'text-muted-foreground'
+                  )}
+                >
+                  {s.label}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
 
       {step === 'upload' && <CSVUpload onParsed={handleParsed} />}
 

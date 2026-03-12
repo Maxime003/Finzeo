@@ -44,7 +44,7 @@ export function TransactionFilters({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => onMonthChange(subMonths(month, 1))}
         >
@@ -54,7 +54,7 @@ export function TransactionFilters({
           {formatMonthYear(month)}
         </span>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           onClick={() => onMonthChange(addMonths(month, 1))}
         >
