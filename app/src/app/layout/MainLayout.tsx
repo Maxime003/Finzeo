@@ -2,6 +2,14 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
 import { cn } from '@/lib/utils'
 import {
@@ -13,8 +21,22 @@ import {
   Menu,
   LogOut,
   Wallet,
+  Map,
 } from 'lucide-react'
 import { useState } from 'react'
+
+function getInitials(user: { email?: string; user_metadata?: { full_name?: string } } | null): string {
+  const fullName = user?.user_metadata?.full_name
+  if (fullName) {
+    const parts = fullName.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    }
+    return fullName.slice(0, 2).toUpperCase()
+  }
+  const email = user?.email ?? ''
+  return email.slice(0, 2).toUpperCase()
+}
 
 const NAV_ITEMS = [
   { to: '/app', label: 'Tableau de bord', icon: LayoutDashboard, exact: true },
@@ -97,23 +119,40 @@ export function MainLayout() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            {/* User info — desktop */}
-            {user?.email && (
-              <span className="hidden lg:block text-xs text-muted-foreground max-w-[160px] truncate">
-                {user.email}
-              </span>
-            )}
-
-            {/* Sign out — desktop */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="hidden md:flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden lg:inline">Déconnexion</span>
-            </Button>
+            {/* Avatar dropdown — desktop */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="hidden md:flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white shrink-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  style={{ backgroundColor: '#4f46e5', fontSize: '12px' }}
+                >
+                  {getInitials(user)}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="font-normal">
+                  <span className="text-xs text-muted-foreground truncate block">
+                    {user?.email}
+                  </span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/roadmap" className="flex items-center gap-2">
+                    <Map className="h-4 w-4" />
+                    Roadmap & idées
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Se déconnecter
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Mobile menu */}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -142,6 +181,14 @@ export function MainLayout() {
                     {NAV_ITEMS.map((item) => (
                       <NavLink key={item.to} {...item} mobile />
                     ))}
+                    <Link
+                      to="/roadmap"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2 text-base font-medium transition-colors px-3 py-3 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    >
+                      <Map className="h-5 w-5 shrink-0" />
+                      Roadmap & idées
+                    </Link>
                   </nav>
 
                   {/* Sheet footer */}
@@ -158,10 +205,10 @@ export function MainLayout() {
                         setMobileOpen(false)
                         handleSignOut()
                       }}
-                      className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+                      className="w-full justify-start gap-2 text-destructive hover:text-destructive"
                     >
                       <LogOut className="h-4 w-4" />
-                      Déconnexion
+                      Se déconnecter
                     </Button>
                   </div>
                 </div>
