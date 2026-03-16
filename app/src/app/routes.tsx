@@ -9,6 +9,10 @@ import { CategorizationPage } from '@/features/categorization/pages/Categorizati
 import { TransactionsPage } from '@/features/transactions/pages/TransactionsPage'
 import { PendingExpensesPage } from '@/features/pending-expenses/pages/PendingExpensesPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
+import { RoadmapLayout } from '@/features/roadmap/components/RoadmapLayout'
+import { RoadmapPage } from '@/features/roadmap/pages/RoadmapPage'
+import { IdeasPage } from '@/features/roadmap/pages/IdeasPage'
+import { AdminPage } from '@/features/roadmap/pages/AdminPage'
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +37,15 @@ export const router = createBrowserRouter([
       { path: 'categorize', element: <CategorizationPage /> },
       { path: 'transactions', element: <TransactionsPage /> },
       { path: 'pending', element: <PendingExpensesPage /> },
+    ],
+  },
+  {
+    path: '/roadmap',
+    element: <RoadmapLayout />,
+    children: [
+      { index: true, element: <RoadmapPage /> },
+      { path: 'ideas', element: <IdeasPage /> },
+      { path: 'admin', element: <AdminPage /> },
     ],
   },
 ])
