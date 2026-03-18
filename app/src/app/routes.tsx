@@ -8,6 +8,7 @@ import { ImportPage } from '@/features/import/pages/ImportPage'
 import { CategorizationPage } from '@/features/categorization/pages/CategorizationPage'
 import { TransactionsPage } from '@/features/transactions/pages/TransactionsPage'
 import { PendingExpensesPage } from '@/features/pending-expenses/pages/PendingExpensesPage'
+import { BudgetsPage } from '@/features/budgets/components/BudgetsPage'
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute'
 import { RoadmapLayout } from '@/features/roadmap/components/RoadmapLayout'
 import { RoadmapPage } from '@/features/roadmap/pages/RoadmapPage'
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { path: 'categorize', element: <CategorizationPage /> },
       { path: 'transactions', element: <TransactionsPage /> },
       { path: 'pending', element: <PendingExpensesPage /> },
+      { path: 'budgets', element: <BudgetsPage /> },
     ],
   },
   {

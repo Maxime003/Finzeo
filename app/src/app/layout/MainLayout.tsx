@@ -18,6 +18,7 @@ import {
   Tag,
   List,
   Clock,
+  PiggyBank,
   Menu,
   LogOut,
   Map,
@@ -43,6 +44,7 @@ const NAV_ITEMS = [
   { to: '/app/categorize', label: 'Catégoriser', icon: Tag },
   { to: '/app/transactions', label: 'Transactions', icon: List },
   { to: '/app/pending', label: 'En attente', icon: Clock },
+  { to: '/app/budgets', label: 'Budgets', icon: PiggyBank },
 ]
 
 export function MainLayout() {
