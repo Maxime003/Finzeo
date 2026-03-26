@@ -1,0 +1,6 @@
+Le déploiement Vercel échoue à cause d'une erreur TypeScript dans src/features/budgets/hooks/useBudgets.ts ligne 42 :
+
+error TS2352: Conversion of type '{ name: any; }[]' to type '{ name: string; }' may be a mistake because neither type sufficiently overlaps with the other.
+Property 'name' is missing in type '{ name: any; }[]' but required in type '{ name: string; }'.
+
+Le problème : un tableau est casté vers un type objet simple au lieu d'un type tableau. Corrige le typage à la ligne 42 pour que le cast reflète le vrai type retourné. Ensuite lance `npx tsc -b --noEmit` pour vérifier qu'il n'y a plus aucune erreur TypeScript dans tout le projet.

@@ -39,7 +39,8 @@ export function useBudgets(month: Date) {
       // 3. Aggregate spending per category name
       const spendingByCategory = new Map<string, number>()
       for (const tx of transactions ?? []) {
-        const catName = (tx.category as { name: string } | null)?.name
+        const cat = tx.category as { name: string }[] | null
+        const catName = cat?.[0]?.name
         if (!catName) continue
         spendingByCategory.set(
           catName,
